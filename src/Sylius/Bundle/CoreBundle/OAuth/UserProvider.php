@@ -26,6 +26,7 @@ use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Sylius\Component\User\Canonicalizer\CanonicalizerInterface;
 use Sylius\Component\User\Model\UserOAuthInterface;
 use Sylius\Component\User\Repository\UserRepositoryInterface;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Webmozart\Assert\Assert;
 
@@ -114,10 +115,12 @@ class UserProvider extends BaseUserProvider implements AccountConnectorInterface
             $user = $this->userRepository->findOneByEmail($response->getEmail());
             if (null !== $user) {
                 return $this->updateUserByOAuthUserResponse($user, $response);
+            } else {
+                return $this->createUserByOAuthUserResponse($response);
             }
+        } else {
+            throw new UsernameNotFoundException('Email is null or not provided');
         }
-
-        return $this->createUserByOAuthUserResponse($response);
     }
 
     /**
